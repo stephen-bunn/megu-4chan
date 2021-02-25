@@ -96,9 +96,11 @@ class ThreadPlugin(BasePlugin):
             post_meta = Meta(
                 id=post_id,
                 description=post.get("com"),
-                publisher=post["name"],
-                published_at=datetime.fromtimestamp(post["time"]),  # type: ignore
-                filename=post["filename"],
+                publisher=post.get("name"),
+                published_at=(
+                    datetime.fromtimestamp(post["time"]) if "time" in post else None
+                ),
+                filename=post.get("filename"),
                 thumbnail=post_thumbnail_url,
             )
 
