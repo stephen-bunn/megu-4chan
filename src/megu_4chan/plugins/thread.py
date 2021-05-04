@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 # Copyright (c) 2021 Stephen Bunn <stephen@bunn.io>
-# ISC License <https://choosealicense.com/licenses/isc>
+# GPLv3 License <https://choosealicense.com/licenses/gpl-3.0/>
 
 """Contains the logic necessary for extracting content from a 4chan thread."""
 
@@ -107,6 +107,7 @@ class ThreadPlugin(BasePlugin):
             # yield the raw image content
             yield Content(
                 id=get_content_id(board, post_id),
+                name="Post Image",
                 url=url.url,
                 quality=1.0,
                 size=post["fsize"],
@@ -125,6 +126,7 @@ class ThreadPlugin(BasePlugin):
 
                     yield Content(
                         id=get_content_id(board, post_id),
+                        name="Post Thumbnail",
                         url=url.url,
                         quality=0.0,
                         size=post_thumbnail_size,
