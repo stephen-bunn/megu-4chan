@@ -4,9 +4,9 @@ Megu plugin for fetching 4chan media content.
 
 At the moment this package includes the following plugins:
 
-|Plugin       |Example URL                               |
-|:------------|:-----------------------------------------|
-|4chan Thread|https://boards.4chan.org/wg/thread/7708038|
+| Plugin       | Example URL                                |
+| :----------- | :----------------------------------------- |
+| 4chan Thread | https://boards.4chan.org/wg/thread/7708038 |
 
 ## Installation
 

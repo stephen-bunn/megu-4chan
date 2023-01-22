@@ -11,11 +11,11 @@ from pathlib import Path
 from typing import Generator
 
 from megu.helpers import http_session
-from megu.models import Content, HttpMethod, HttpResource, Manifest, Meta, Url
+from megu.models import URL, Content, ContentManifest, ContentMetadata, HTTPResource
 from megu.plugin import BasePlugin
 
-from ..constants import THREAD_PATTERN
-from ..helpers import (
+from megu_4chan.constants import THREAD_PATTERN
+from megu_4chan.helpers import (
     get_checksum,
     get_content_id,
     get_image_url,
@@ -27,11 +27,21 @@ from ..helpers import (
 class ThreadPlugin(BasePlugin):
     """4chan thread plugin."""
 
-    name = "4chan Thread"
-    domains = {"boards.4chan.org", "boards.4channel.org"}
     pattern = re.compile(THREAD_PATTERN)
 
-    def can_handle(self, url: Url) -> bool:
+    @property
+    def name(self) -> str:
+        """Name of the thread plugin."""
+
+        return "4chan Thread"
+
+    @property
+    def domains(self) -> set[str]:
+        """Domains handled by the thread plugin."""
+
+        return {"boards.4chan.org", "boards.4channel.org"}
+
+    def can_handle(self, url: URL) -> bool:
         """Ensure that the plugin only attempts to process URLs that it can handle.
 
         Args:
@@ -43,9 +53,9 @@ class ThreadPlugin(BasePlugin):
                 True if the plugin can handle the given url, otherwise False.
         """
 
-        return self.pattern.match(url.url) is not None
+        return self.pattern.match(str(url)) is not None
 
-    def extract_content(self, url: Url) -> Generator[Content, None, None]:
+    def iter_content(self, url: URL) -> Generator[Content, None, None]:
         """Extract 4chan thread content from the given url.
 
         Args:
@@ -62,16 +72,16 @@ class ThreadPlugin(BasePlugin):
         """
 
         # extract details from the url
-        match = self.pattern.match(url.url)
+        match = self.pattern.match(str(url))
         if not match:
-            raise ValueError(f"Failed to match url {url.url}")
+            raise ValueError(f"Failed to match url {url}")
 
         groups = match.groupdict()
         board = groups.get("board", None)
         thread = groups.get("thread", None)
 
         if not board or not thread:
-            raise ValueError(f"Failed to extract board and thread from url {url.url}")
+            raise ValueError(f"Failed to extract board and thread from url {url}")
 
         # iterate over available posts from the given url
         for post in get_thread(board, thread)["posts"]:
@@ -93,7 +103,7 @@ class ThreadPlugin(BasePlugin):
                 post_image_type = "image/jpeg"
 
             # construct the available metadata from the given post
-            post_meta = Meta(
+            post_meta = ContentMetadata(
                 id=post_id,
                 description=post.get("com"),
                 publisher=post.get("name"),
@@ -101,21 +111,26 @@ class ThreadPlugin(BasePlugin):
                     datetime.fromtimestamp(post["time"]) if "time" in post else None
                 ),
                 filename=post.get("filename"),
-                thumbnail=post_thumbnail_url,
+                thumbnail=URL(post_thumbnail_url),
             )
+
+            post_image_size = post.get("fsize")
+            if post_image_size is None:
+                with http_session() as session:
+                    post_image_size = session.head(post_image_url).headers.get("Content-Length", 0)
 
             # yield the raw image content
             yield Content(
                 id=get_content_id(board, post_id),
                 name="Post Image",
-                url=url.url,
+                url=url,
                 quality=1.0,
-                size=post["fsize"],
+                size=int(post_image_size),
                 type=post_image_type,
-                resources=[HttpResource(method=HttpMethod.GET, url=post_image_url)],
-                meta=post_meta,
+                resources=[HTTPResource(method="GET", url=post_image_url)],
+                metadata=post_meta,
                 checksums=[get_checksum(post["md5"])],  # type: ignore
-                extra=post,
+                extra=dict(post),
             )
 
             # yield the image thumbnail content (if available)
@@ -127,24 +142,24 @@ class ThreadPlugin(BasePlugin):
                     yield Content(
                         id=get_content_id(board, post_id),
                         name="Post Thumbnail",
-                        url=url.url,
+                        url=url,
                         quality=0.0,
-                        size=post_thumbnail_size,
+                        size=int(post_thumbnail_size),
                         type="image/jpeg",
                         resources=[
-                            HttpResource(method=HttpMethod.GET, url=post_thumbnail_url)
+                            HTTPResource(method="GET", url=post_thumbnail_url)
                         ],
-                        meta=post_meta,
-                        extra=post,
+                        metadata=post_meta,
+                        extra=dict(post),
                     )
 
-    def merge_manifest(self, manifest: Manifest, to_path: Path) -> Path:
+    def write_content(self, manifest: ContentManifest, to_path: Path) -> Path:
         """Merge the downloaded manifest to the appropriate filepath.
 
         .. important::
             This plugin assumes that only one artifact is downloaded and included in
             the manifest. Since the content from 4chan is not chunked up, we can handle
-            fetching the content through a single HttpResource.
+            fetching the content through a single HTTPResource.
 
         Args:
             manifest (megu.models.Manifest):
@@ -161,13 +176,14 @@ class ThreadPlugin(BasePlugin):
                 The path the manifest artifacts were merged to (should be *to_path*).
         """
 
-        if len(manifest.artifacts) != 1:
+        _, artifacts = manifest
+        if len(artifacts) != 1:
             raise ValueError(
                 f"{self.__class__.__name__!s} expects only one artifact, "
-                f"received {len(manifest.artifacts)}"
+                f"received {len(artifacts)}"
             )
 
-        _, only_artifact = manifest.artifacts[0]
+        _, only_artifact = artifacts[0]
         only_artifact.rename(to_path)
 
         return to_path

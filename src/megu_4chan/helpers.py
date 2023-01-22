@@ -6,12 +6,11 @@
 
 from base64 import b64decode
 
-from megu.hasher import HashType
 from megu.helpers import http_session
-from megu.models import Checksum
+from megu.models import ContentChecksum
 
-from .constants import API_DOMAIN, IMAGE_DOMAIN
-from .types import Thread
+from megu_4chan.constants import API_DOMAIN, IMAGE_DOMAIN
+from megu_4chan.types import Thread
 
 
 def get_content_id(board: str, post_id: str) -> str:
@@ -112,7 +111,7 @@ def get_thread(board: str, thread_id: str) -> Thread:
         return response_body
 
 
-def get_checksum(md5_hash: str) -> Checksum:
+def get_checksum(md5_hash: str) -> ContentChecksum:
     """Produce a Checksum instance for some 4chan encoded md5 hash.
 
     Args:
@@ -124,4 +123,4 @@ def get_checksum(md5_hash: str) -> Checksum:
             The appropriate checksum instance for the given hash.
     """
 
-    return Checksum(type=HashType.MD5, hash=b64decode(md5_hash).hex())
+    return ContentChecksum("md5", b64decode(md5_hash).hex())

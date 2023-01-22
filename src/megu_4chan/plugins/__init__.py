@@ -7,6 +7,6 @@
 This module should expose the implemented plugins.
 """
 
-from .thread import ThreadPlugin
+from megu_4chan.plugins.thread import ThreadPlugin
 
 __all__ = ["ThreadPlugin"]

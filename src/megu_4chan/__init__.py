@@ -7,6 +7,10 @@
 This package should expose only the plugins implemented by the package.
 """
 
-from .plugins import ThreadPlugin
+from megu import register_plugin
+
+from megu_4chan.plugins import ThreadPlugin
+
+register_plugin(ThreadPlugin)
 
 __all__ = ["ThreadPlugin"]

@@ -4,7 +4,7 @@
 
 """Contains type definitions used throughout the package."""
 
-from typing import List, Optional, TypedDict
+from typing import List, TypedDict
 
 
 class Post(TypedDict):
@@ -12,41 +12,41 @@ class Post(TypedDict):
 
     no: int
     resto: int
-    sticky: Optional[int]
-    closed: Optional[int]
+    sticky: int | None
+    closed: int | None
     now: str
     time: int
     name: str
-    trip: Optional[str]
-    id: Optional[str]
-    capcode: Optional[str]
-    country: Optional[str]
-    country_name: Optional[str]
-    sub: Optional[str]
-    com: Optional[str]
-    tim: Optional[int]
-    filename: Optional[str]
-    ext: Optional[str]
-    fsize: Optional[int]
-    md5: Optional[str]
-    w: Optional[int]
-    h: Optional[int]
-    tn_w: Optional[int]
-    tn_h: Optional[int]
-    filedeleted: Optional[int]
-    spoiler: Optional[int]
-    custom_spoiler: Optional[int]
-    replies: Optional[int]
-    images: Optional[int]
-    bumplimit: Optional[int]
-    imagelimit: Optional[int]
-    tag: Optional[str]
-    semantic_url: Optional[str]
-    since4pass: Optional[int]
-    unique_ips: Optional[int]
-    m_img: Optional[int]
-    archived: Optional[int]
-    archived_on: Optional[int]
+    trip: str | None
+    id: str | None
+    capcode: str | None
+    country: str | None
+    country_name: str | None
+    sub: str | None
+    com: str | None
+    tim: int | None
+    filename: str | None
+    ext: str | None
+    fsize: int | None
+    md5: str | None
+    w: int | None
+    h: int | None
+    tn_w: int | None
+    tn_h: int | None
+    filedeleted: int | None
+    spoiler: int | None
+    custom_spoiler: int | None
+    replies: int | None
+    images: int | None
+    bumplimit: int | None
+    imagelimit: int | None
+    tag: str | None
+    semantic_url: str | None
+    since4pass: int | None
+    unique_ips: int | None
+    m_img: int | None
+    archived: int | None
+    archived_on: int | None
 
 
 class Thread(TypedDict):
