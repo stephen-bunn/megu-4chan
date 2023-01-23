@@ -122,6 +122,7 @@ class ThreadPlugin(BasePlugin):
             # yield the raw image content
             yield Content(
                 id=get_content_id(board, post_id),
+                group=get_content_id(board, post_id),
                 name="Post Image",
                 url=url,
                 quality=1.0,
@@ -140,7 +141,8 @@ class ThreadPlugin(BasePlugin):
                     post_thumbnail_size = head_response.headers.get("content-length")
 
                     yield Content(
-                        id=get_content_id(board, post_id),
+                        id=f"{get_content_id(board, post_id)}-thumbnail",
+                        group=get_content_id(board, post_id),
                         name="Post Thumbnail",
                         url=url,
                         quality=0.0,
