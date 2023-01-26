@@ -1,10 +1,5 @@
-# -*- encoding: utf-8 -*-
-# Copyright (c) 2021 Stephen Bunn <stephen@bunn.io>
-# GPLv3 License <https://choosealicense.com/licenses/gpl-3.0/>
-
 """Contains the logic necessary for extracting content from a 4chan thread."""
 
-import re
 from datetime import datetime
 from mimetypes import guess_type
 from pathlib import Path
@@ -15,7 +10,7 @@ from megu.models import URL, Content, ContentManifest, ContentMetadata, HTTPReso
 from megu.plugin import BasePlugin
 
 from megu_4chan.constants import THREAD_PATTERN
-from megu_4chan.helpers import (
+from megu_4chan.utils import (
     get_checksum,
     get_content_id,
     get_image_url,
@@ -26,8 +21,6 @@ from megu_4chan.helpers import (
 
 class ThreadPlugin(BasePlugin):
     """4chan thread plugin."""
-
-    pattern = re.compile(THREAD_PATTERN)
 
     @property
     def name(self) -> str:
@@ -41,11 +34,12 @@ class ThreadPlugin(BasePlugin):
 
         return {"boards.4chan.org", "boards.4channel.org"}
 
-    def can_handle(self, url: URL) -> bool:
+    @classmethod
+    def can_handle(cls, url: URL) -> bool:
         """Ensure that the plugin only attempts to process URLs that it can handle.
 
         Args:
-            url (megu.models.Url):
+            url (megu.models.URL):
                 The URL to check.
 
         Returns:
@@ -53,13 +47,13 @@ class ThreadPlugin(BasePlugin):
                 True if the plugin can handle the given url, otherwise False.
         """
 
-        return self.pattern.match(str(url)) is not None
+        return THREAD_PATTERN.match(str(url)) is not None
 
     def iter_content(self, url: URL) -> Generator[Content, None, None]:
         """Extract 4chan thread content from the given url.
 
         Args:
-            url (megu.models.Url):
+            url (megu.models.URL):
                 The validated url provided by the user.
 
         Raises:
@@ -72,7 +66,7 @@ class ThreadPlugin(BasePlugin):
         """
 
         # extract details from the url
-        match = self.pattern.match(str(url))
+        match = THREAD_PATTERN.match(str(url))
         if not match:
             raise ValueError(f"Failed to match url {url}")
 
@@ -80,11 +74,13 @@ class ThreadPlugin(BasePlugin):
         board = groups.get("board", None)
         thread = groups.get("thread", None)
 
-        if not board or not thread:
+        # I'm unsure if we can ever get the board and the thread if we fail the thread match
+        if not board or not thread:  # pragma: no cover
             raise ValueError(f"Failed to extract board and thread from url {url}")
 
         # iterate over available posts from the given url
         for post in get_thread(board, thread)["posts"]:
+            print(post)
             if post.get("filename") is None or post.get("ext") is None:
                 continue
 
@@ -107,9 +103,7 @@ class ThreadPlugin(BasePlugin):
                 id=post_id,
                 description=post.get("com"),
                 publisher=post.get("name"),
-                published_at=(
-                    datetime.fromtimestamp(post["time"]) if "time" in post else None
-                ),
+                published_at=(datetime.fromtimestamp(post["time"]) if "time" in post else None),
                 filename=post.get("filename"),
                 thumbnail=URL(post_thumbnail_url),
             )
@@ -148,9 +142,7 @@ class ThreadPlugin(BasePlugin):
                         quality=0.0,
                         size=int(post_thumbnail_size),
                         type="image/jpeg",
-                        resources=[
-                            HTTPResource(method="GET", url=post_thumbnail_url)
-                        ],
+                        resources=[HTTPResource(method="GET", url=post_thumbnail_url)],
                         metadata=post_meta,
                         extra=dict(post),
                     )

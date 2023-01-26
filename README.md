@@ -14,9 +14,5 @@ With the latest version of `megu`, you should be able to install the plugin via 
 
 ```console
 $ megu plugin install git+https://github.com/stephen-bunn/megu-4chan.git
-Installing Plugin $HOME/.config/megu/plugins
 ...
 ```
-
-Don't quote me on that though.
-All of this is still heavily WIP.

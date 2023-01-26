@@ -1,10 +1,6 @@
-# -*- encoding: utf-8 -*-
-# Copyright (c) 2021 Stephen Bunn <stephen@bunn.io>
-# GPLv3 License <https://choosealicense.com/licenses/gpl-3.0/>
-
 """Contains type definitions used throughout the package."""
 
-from typing import List, TypedDict
+from typing import TypedDict
 
 
 class Post(TypedDict):
@@ -52,17 +48,17 @@ class Post(TypedDict):
 class Thread(TypedDict):
     """Describes the Thread data from the 4chan API."""
 
-    posts: List[Post]
+    posts: list[Post]
 
 
 class CatalogPage(TypedDict):
     """Describes the CatalogPage data from the 4chan API."""
 
     page: int
-    threads: List[Thread]
+    threads: list[Thread]
 
 
 class Catalog(TypedDict):
     """Describes the Catalog data from the 4chan API."""
 
-    pages: List[CatalogPage]
+    pages: list[CatalogPage]

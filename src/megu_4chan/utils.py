@@ -1,7 +1,3 @@
-# -*- encoding: utf-8 -*-
-# Copyright (c) 2021 Stephen Bunn <stephen@bunn.io>
-# GPLv3 License <https://choosealicense.com/licenses/gpl-3.0/>
-
 """Contains useful helper functions used throughout the project."""
 
 from base64 import b64decode
@@ -104,7 +100,7 @@ def get_thread(board: str, thread_id: str) -> Thread:
     thread_url = get_thread_url(board, thread_id)
     with http_session() as session:
         response = session.get(thread_url)
-        if response.status_code not in (200,):
+        if response.status_code not in {200}:
             raise ValueError(f"Failed to get response for thread at {thread_url}")
 
         response_body: Thread = response.json()

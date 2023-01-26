@@ -9,7 +9,7 @@ This package should expose only the plugins implemented by the package.
 
 from megu import register_plugin
 
-from megu_4chan.plugins import ThreadPlugin
+from megu_4chan.thread import ThreadPlugin
 
 register_plugin(ThreadPlugin)
 
